@@ -24,7 +24,6 @@
 #include <dvo/core/weight_calculation.h>
 
 #include <dvo/util/histogram.h>
-#include <dvo/visualization/visualizer.h>
 
 namespace dvo
 {
@@ -457,13 +456,6 @@ void WeightCalculation::calculateWeights(const cv::Mat& errors, cv::Mat& weights
       *weight_ptr = 0.0f;
     }
   }
-
-  dvo::visualization::Visualizer::instance()
-    //.show("residuals", cv::abs(errors))
-    //.showHistogram("residuals_histogram", errors, 5.0f, -255.0f, 255.0f)
-    .show("weights", weights)
-    //.show("weighted_residuals", cv::abs(weights.mul(errors)))
-  ;
 }
 
 } /* namespace core */

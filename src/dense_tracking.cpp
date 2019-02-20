@@ -21,7 +21,7 @@
 #include <dvo/dense_tracking.h>
 
 #include <assert.h>
-#include <sophus/se3.h>
+#include <sophus/se3.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
@@ -29,7 +29,6 @@
 #include <dvo/core/datatypes.h>
 #include <dvo/util/revertable.h>
 #include <dvo/util/stopwatch.h>
-#include <dvo/visualization/visualizer.h>
 
 #include <tbb/task_scheduler_init.h>
 #include <tbb/parallel_reduce.h>
@@ -103,7 +102,7 @@ const IntrinsicMatrix& DenseTracker::intrinsics(size_t level)
 
 void DenseTracker::updateLastTransform(Eigen::Affine3d& last_transformation)
 {
-  last_xi_ = Sophus::SE3(last_transformation.rotation(), last_transformation.translation());
+  last_xi_ = Sophus::SE3<double>(last_transformation.rotation(), last_transformation.translation());
 }
 
 void DenseTracker::getCovarianceEstimate(Eigen::Matrix<double, 6, 6>& covariance) const
@@ -124,10 +123,10 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
   }
 
   // our first increment is the given guess
-  Sophus::SE3 inc(transformation.rotation(), transformation.translation());
+  Sophus::SE3<double> inc(transformation.rotation(), transformation.translation());
 
-  Revertable<Sophus::SE3> old(last_xi_);
-  Revertable<Sophus::SE3> initial(inc);
+  Revertable<Sophus::SE3<double>> old(last_xi_);
+  Revertable<Sophus::SE3<double>> initial(inc);
   Revertable<AffineTransform> estimate(AffineTransform::Identity());
 
   bool accept = true;
@@ -181,7 +180,7 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
         old.revert();
         initial.revert();
         estimate.revert();
-        inc = Sophus::SE3::exp(Vector6::Zero().cast<double>());
+        inc = Sophus::SE3<double>::exp(Vector6::Zero().cast<double>());
 
         break;
       }
@@ -222,7 +221,7 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
 
       //ROS_DEBUG_STREAM_COND(accept, itctx_ << ", Increment: " << x.format(YamlArrayFmt));
 
-      inc = Sophus::SE3::exp(x.cast<double>());
+      inc = Sophus::SE3<double>::exp(x.cast<double>());
 
       itctx_.Iteration++;
       itctx_.NumConstraints = ls.num_constraints;
@@ -247,7 +246,7 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
 
   if(success)
   {
-    last_xi_ = Sophus::SE3(estimate().rotation().cast<double>(), estimate().translation().cast<double>());
+    last_xi_ = Sophus::SE3<double>(estimate().rotation().cast<double>(), estimate().translation().cast<double>());
   }
 
   transformation = estimate().inverse().cast<double>();
