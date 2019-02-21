@@ -1,8 +1,1 @@
-cmake_install.cmake
-.project
-.cproject
-.pydevproject
-*.cfgc
 build/
-bin/
-lib/
