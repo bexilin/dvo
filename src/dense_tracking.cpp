@@ -246,7 +246,22 @@ bool DenseTracker::match(RgbdImagePyramid& reference, RgbdImagePyramid& current,
 
   if(success)
   {
-    last_xi_ = Sophus::SE3<double>(estimate().rotation().cast<double>(), estimate().translation().cast<double>());
+    // Re-orthogonalization of rotation matrix.
+    Eigen::Matrix3d rotation = estimate().rotation().cast<double>();
+    Eigen::Vector3d r1 = rotation.col(0);
+    Eigen::Vector3d r2 = rotation.col(1);
+    Eigen::Vector3d r3 = rotation.col(2);
+    auto error = r1.dot(r2);
+    auto r1_ortho = r1 - 0.5 * error * r2;
+    auto r2_ortho = r2 - 0.5 * error * r1;
+    auto r3_ortho = r1.cross(r2);
+    Eigen::Matrix3d rotation_ortho;
+    rotation_ortho.col(0) = 0.5 * (3-r1_ortho.dot(r1_ortho)) * r1_ortho;
+    rotation_ortho.col(1) = 0.5 * (3-r2_ortho.dot(r2_ortho)) * r2_ortho;
+    rotation_ortho.col(2) = 0.5 * (3-r3_ortho.dot(r3_ortho)) * r3_ortho;
+
+    // Sophus call.
+    last_xi_ = Sophus::SE3<double>(rotation_ortho, estimate().translation().cast<double>());
   }
 
   transformation = estimate().inverse().cast<double>();
