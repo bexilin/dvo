@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.4.6)
-
 project(dvo)
+
+set( CMAKE_CXX_STANDARD 11 )
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+set( CMAKE_CXX_EXTENSIONS OFF )
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED)
@@ -24,4 +27,4 @@ set(src_files ${src_core} src/dense_tracking.cpp src/dense_tracking_config.cpp s
 # Compile to shared library.
 add_library(dvo_core SHARED ${src_files} )
 target_include_directories(dvo_core PUBLIC include)
-target_link_libraries(dvo_core ${OpenCV_LIBS} Eigen3::Eigen)
+target_link_libraries(dvo_core ${OpenCV_LIBS} tbb Eigen3::Eigen)
